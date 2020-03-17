@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Componet, useState, useEffect } from "react";
 import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import { Camera } from "expo-camera";
 import * as Permissions from "expo-permissions";
@@ -9,23 +9,16 @@ import {
   MaterialCommunityIcons
 } from "@expo/vector-icons";
 
-class App extends React.Component {
-  constructor() {
-    super();
-    this.state = {
-      hasPermission: null,
-      type: Camera.Constants.Type.back
-      // ref={ref => {
-      //   this.camera = ref;
-      // }}
-    };
-  }
+const App = () => {
 
-  async componentDidMount() {
-    this.getPermissionAsync();
-  }
+  const [hasPermission, setHaspermission] = useState(null);
+  const [type, setType] = useState(Camera.Constants.Type.back);
 
-  getPermissionAsync = async () => {
+  // async componentDidMount() {
+  //   this.getPermissionAsync();
+  // }
+
+  const getPermissionAsync = async () => {
     // Camera roll Permission
     if (Platform.OS === "android") {
       const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
@@ -35,103 +28,96 @@ class App extends React.Component {
     }
     // Camera Permission
     const { status } = await Permissions.askAsync(Permissions.CAMERA);
-    this.setState({ hasPermission: status === "granted" });
+    setHaspermission(status == 'granted')
   };
 
-  handleCameraType = () => {
-    const { cameraType } = this.state;
-
-    this.setState({
-      cameraType:
-        cameraType === Camera.Constants.Type.back
-          ? Camera.Constants.Type.front
-          : Camera.Constants.Type.back
-    });
+  const handleCameraType = () => {
+    let newType = type === Camera.Constants.Type.back ? Camera.Constants.Type.front : Camera.Constants.Type.back;
+    setType(newType);
   };
 
-  takePicture = async () => {
-    if (this.camera) {
-      let photo = await this.camera.takePictureAsync();
+  const takePicture = async () => {
+    if (camera) {
+      let photo = await camera.takePictureAsync();
     }
   };
 
-  pickImage = async () => {
+  const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images
     });
   };
-
-  render() {
-    const { hasPermission } = this.state;
-
-    if (hasPermission === null) {
-      return <View />;
-    } else if (hasPermission === false) {
-      return <Text>No access to camera</Text>;
-    } else {
-      return (
-        <View style={{ flex: 1 }}>
-          <Camera
-            style={{ flex: 1 }}
-            type={this.state.cameraType}
-            ref={ref => {
-              this.camera = ref;
+  useEffect(() => {
+    getPermissionAsync()
+  })
+  if (hasPermission === null) {
+    return <View />;
+  } else if (hasPermission === false) {
+    return <Text>No access to camera</Text>;
+  } else {
+    return (
+      <View style={{ flex: 1 }}>
+        <Camera
+          style={{ flex: 1 }}
+          type={this.state.cameraType}
+          ref={ref => {
+            this.camera = ref;
+          }}
+        >
+          <View
+            style={{
+              flex: 1,
+              flexDirection: "row",
+              justifyContent: "space-between",
+              margin: 20
             }}
           >
-            <View
+            <TouchableOpacity
               style={{
-                flex: 1,
-                flexDirection: "row",
-                justifyContent: "space-between",
-                margin: 20
+                alignSelf: "flex-end",
+                alignItems: "center",
+                backgroundColor: "transparent"
               }}
+              onPress={() => this.pickImage()}
             >
-              <TouchableOpacity
-                style={{
-                  alignSelf: "flex-end",
-                  alignItems: "center",
-                  backgroundColor: "transparent"
-                }}
-                onPress={() => this.pickImage()}
-              >
-                <Ionicons
-                  name="ios-photos"
-                  style={{ color: "#fff", fontSize: 40 }}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={{
-                  alignSelf: "flex-end",
-                  alignItems: "center",
-                  backgroundColor: "transparent"
-                }}
-                onPress={() => this.takePicture()}
-              >
-                <FontAwesome
-                  name="camera"
-                  style={{ color: "#fff", fontSize: 40 }}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={{
-                  alignSelf: "flex-end",
-                  alignItems: "center",
-                  backgroundColor: "transparent"
-                }}
-                onPress={() => this.handleCameraType()}
-              >
-                <MaterialCommunityIcons
-                  name="camera-switch"
-                  style={{ color: "#fff", fontSize: 40 }}
-                />
-              </TouchableOpacity>
-            </View>
-          </Camera>
-        </View>
-      );
-    }
+              <Ionicons
+                name="ios-photos"
+                style={{ color: "#fff", fontSize: 40 }}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                alignSelf: "flex-end",
+                alignItems: "center",
+                backgroundColor: "transparent"
+              }}
+              onPress={() => this.takePicture()}
+            >
+              <FontAwesome
+                name="camera"
+                style={{ color: "#fff", fontSize: 40 }}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                alignSelf: "flex-end",
+                alignItems: "center",
+                backgroundColor: "transparent"
+              }}
+              onPress={() => this.handleCameraType()}
+            >
+              <MaterialCommunityIcons
+                name="camera-switch"
+                style={{ color: "#fff", fontSize: 40 }}
+              />
+            </TouchableOpacity>
+          </View>
+        </Camera>
+      </View>
+    );
   }
 }
+
 
 const styles = StyleSheet.create({
   container: {
